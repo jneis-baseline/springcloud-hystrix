@@ -1,6 +1,7 @@
 package org.jneis.hack.springboot.netflix
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty
 import java.util.concurrent.atomic.AtomicLong
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -12,7 +13,11 @@ class HelloWorldController {
     private final AtomicLong counter = new AtomicLong()
 
     @RequestMapping("/hello")
-    @HystrixCommand(fallbackMethod = "helloNotFound")
+    @HystrixCommand(fallbackMethod = "helloNotFound", commandProperties = [
+            @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "2"),
+            @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "10000")//,
+//            @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "50")
+    ])
     Hello hello(@RequestParam(value = "name", defaultValue = "World") String name) {
         if ('hello'.equals(name)) {
             throw new RuntimeException("command failed")
